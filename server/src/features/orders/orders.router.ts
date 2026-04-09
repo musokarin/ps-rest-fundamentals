@@ -1,6 +1,6 @@
 import express from "express";
-import { getOrderDetail, getOrders, upsertOrder } from "./orders.service";
-import { idUUIDRequestSchema, orderPOSTRequestSchema, pagingRequestSchema } from "../types";
+import { addOrderItems, getOrderDetail, getOrders, upsertOrder } from "./orders.service";
+import { idUUIDRequestSchema, orderItemsDTORequestSchema, orderPOSTRequestSchema, pagingRequestSchema } from "../types";
 import { validate } from "../../middleware/validation.middleware";
 
 export const ordersRouter = express.Router();
@@ -25,4 +25,14 @@ ordersRouter.post("/", validate(orderPOSTRequestSchema), async (req, res) => {
   } else {
     res.status(500).json({ message: "Failed to create order" });
   }
+});
+
+ordersRouter.post("/:id/items", validate(orderItemsDTORequestSchema), async (req, res) => {
+  const data = orderItemsDTORequestSchema.parse(req);
+  const order = await addOrderItems(data.params.id, data.body);
+  if (order != null) {
+    res.status(201).json(order);
+  } else {
+    res.status(500).json({ message: "Failed to add items to order" });
+  } 
 });
